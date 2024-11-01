@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: shared-volume-pod
+spec:
+  volumes:
+    - name: shared-volume
+      emptyDir: {}  # This is an ephemeral volume; data is lost when the pod is deleted
+
+  containers:
+    - name: writer-container-1
+      image: busybox
+      command: ["/bin/sh", "-c", "echo 'Hello from container 1' >> /data/shared-file; sleep 3600"]
+      volumeMounts:
+        - name: shared-volume
+          mountPath: /data
+
+    - name: writer-container-2
+      image: busybox
+      command: ["/bin/sh", "-c", "echo 'Hello from container 2' >> /data/shared-file; sleep 3600"]
+      volumeMounts:
+        - name: shared-volume
+          mountPath: /data
+
+    - name: reader-container
+      image: busybox
+      command: ["/bin/sh", "-c", "while true; do cat /data/shared-file; sleep 10; done"]
+      volumeMounts:
+        - name: shared-volume
+          mountPath: /data
